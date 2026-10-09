@@ -27,8 +27,8 @@ See [the plugin](https://github.com/NiFeather/FeatherMorph)
 推荐 Cloth Config **26.2.155**、Fabric API **0.161.0+26.2**；Mod Menu **20.0.3** 为可选依赖。
 本分支只构建 Fabric，NeoForge 源码保留，但尚未移植到 26.2。
 
-配套服务端为 `../FeatherMorph` 的 26.2 版本。新配置默认启用协议兼容模式（API 17）；
-已有配置若关闭了此选项，需要在模组设置中启用后重新连接服务器。
+配套服务端为 `../FeatherMorph` 的 26.2 / API 19 版本。新配置默认关闭协议兼容模式，
+直接使用 API 19；已有配置需要关闭该选项后重新连接。连接旧 API 17 插件时可启用兼容模式。
 参见 [26.2 升级说明](docs/26.2-upgrade.md) 和 [集成验证](validation/26.2/README.md)。
 
 ### 构建

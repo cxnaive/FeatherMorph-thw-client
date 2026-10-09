@@ -7,6 +7,8 @@ depend: [FeatherMorph]
 commands:
   fmclientbackend:
     permission: fmclientbackend.console
+  fmprotocolprobe:
+    permission: fmclientbackend.console
 permissions:
   fmclientbackend.console:
     default: op

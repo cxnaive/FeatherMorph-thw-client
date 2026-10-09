@@ -504,7 +504,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         ).addEntry(
                 entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.protocol_compatibility_mode"), modConfigData.protocolCompatibilityMode)
                         .setTooltip(Component.translatable("option.morphclient.protocol_compatibility_mode.tooltip"))
-                        .setDefaultValue(true)
+                        .setDefaultValue(false)
                         .setSaveConsumer(v ->
                         {
                             modConfigData.protocolCompatibilityMode = v;

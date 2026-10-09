@@ -657,11 +657,11 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         if (clientPlayer == null)
             return;
 
+        var input = command.getProperties();
+        morphManager.mergeNetworkPropertiesFor(clientPlayer.getId(), input);
         var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(clientPlayer.getId());
         if (syncer == null) return;
 
-        var input = command.getProperties();
-        morphManager.mergeNetworkPropertiesFor(clientPlayer.getId(), input);
         syncer.propertyHolder().updateFromPropertiesInput(input).forEach((p, v) ->
         {
             ((ClientProperty<Object, Entity>) p).apply(syncer.getDisguiseInstance(), v);
@@ -675,6 +675,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         if (clientPlayer == null)
             return;
 
+        morphManager.mergeTemporaryPropertiesFor(clientPlayer.getId(), command.getProperties());
         var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(clientPlayer.getId());
         if (syncer == null) return;
 
@@ -694,10 +695,9 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         if (clientPlayer == null)
             return;
 
+        morphManager.discardPropertiesFor(clientPlayer.getId(), command.propertyNames());
         var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(clientPlayer.getId());
         if (syncer == null) return;
-
-        morphManager.discardPropertiesFor(clientPlayer.getId(), command.propertyNames());
 
         var propertyHolder = syncer.propertyHolder();
         for (String name : command.propertyNames())
@@ -715,6 +715,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         if (clientPlayer == null)
             return;
 
+        morphManager.discardTemporaryPropertiesFor(clientPlayer.getId(), command.propertyNames());
         var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(clientPlayer.getId());
         if (syncer == null) return;
 

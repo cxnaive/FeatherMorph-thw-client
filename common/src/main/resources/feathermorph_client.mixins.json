@@ -41,6 +41,7 @@
     "ClientWorldMixin",
     "CreativeInventoryMixin",
     "GuiMixin",
+    "ShulkerMixin",
     "EntityRenderDispatcherMixin",
     "EntityRendererMixin",
     "EntityRenderStateMixin",

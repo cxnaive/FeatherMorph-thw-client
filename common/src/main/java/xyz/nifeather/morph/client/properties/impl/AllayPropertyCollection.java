@@ -1,6 +1,7 @@
 package xyz.nifeather.morph.client.properties.impl;
 
 import net.minecraft.world.entity.animal.allay.Allay;
+import xyz.nifeather.morph.client.entities.IAllay;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.CommonOutputHandles;
@@ -12,7 +13,7 @@ public class AllayPropertyCollection extends LivingEntityPropertyCollection<Alla
             ClientProperty.builder(PropertyNames.ALLAY_DANCING, false, Allay.class)
                     .inputHandle(CommonInputHandles::readBoolean)
                     .outputHandle(CommonOutputHandles::writeBoolean)
-                    .entityHandle(Allay::setDancing)
+                    .entityHandle((allay, dancing) -> ((IAllay) allay).morphclient$forceSetDancing(dancing))
                     .build();
 
     public AllayPropertyCollection()

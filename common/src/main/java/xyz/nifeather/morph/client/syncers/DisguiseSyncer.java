@@ -107,6 +107,10 @@ public abstract class DisguiseSyncer extends MorphClientObject
             return;
         }
 
+        if (clientProperty.identifier().equals(PropertyNames.LIVING_ENTITY_BED_POS)
+                && disguiseInstance instanceof LivingEntity living)
+            living.clearSleepingPos();
+
         if (clientProperty.restoreDefaultsBeforeDiscard())
         {
             clientProperty.tryCastEntity(disguiseInstance)
@@ -116,6 +120,10 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     private <X, E> void onPropertyDiscard(ClientProperty<X, E> clientProperty)
     {
+        if (clientProperty.identifier().equals(PropertyNames.LIVING_ENTITY_BED_POS)
+                && disguiseInstance instanceof LivingEntity living)
+            living.clearSleepingPos();
+
         if (!clientProperty.restoreDefaultsBeforeDiscard())
             return;
 
@@ -636,7 +644,8 @@ public abstract class DisguiseSyncer extends MorphClientObject
         if (entity instanceof MorphLocalPlayer player)
             player.fishing = bindingPlayer.fishing;
 
-        entity.setInvisible(bindingPlayer.isInvisible());
+        if (!propertyHolder().contains(PropertyNames.LIVING_ENTITY_INVISIBLE))
+            entity.setInvisible(bindingPlayer.isInvisible());
         profiler.pop();
 
         markNotSyncing();

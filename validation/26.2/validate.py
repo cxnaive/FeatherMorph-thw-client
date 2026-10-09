@@ -13,6 +13,7 @@ import tempfile
 import time
 import uuid
 import zipfile
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 SEED = Path(os.environ.get("FM_SERVER_SEED", ROOT.parent / "thw_servers/26.2/test-server"))
@@ -21,9 +22,18 @@ FORMS = ["cow", "pig", "chicken", "cat", "wolf", "sheep", "mooshroom", "nautilus
          "evoker", "slime", "magma_cube", "sulfur_cube", "mannequin", "copper_golem", "horse", "ender_dragon", "player:Notch"]
 AUDIT_RUN = Path(sys.argv[2]).resolve() if len(sys.argv) == 3 and sys.argv[1] == "--audit-run" else None
 SCREENS_ONLY = os.environ.get("FM_SCREEN_VALIDATION_ONLY") == "true"
+PROTOCOL_ONLY = os.environ.get("FM_PROTOCOL_VALIDATION_ONLY") == "true"
+ANIMATION_ENTITY = os.environ.get("FM_ANIMATION_ENTITY", "")
+assert not (SCREENS_ONLY and PROTOCOL_ONLY), "Select one focused validation mode"
+assert not ANIMATION_ENTITY or PROTOCOL_ONLY, "Entity filtering requires FM_PROTOCOL_VALIDATION_ONLY=true"
+API_VERSION = int(os.environ.get("FM_TEST_API", "19"))
+assert API_VERSION in [17, 19], "FM_TEST_API must be 17 or 19"
+assert API_VERSION == 19 or SCREENS_ONLY, "API 17 compatibility checks require FM_SCREEN_VALIDATION_ONLY=true"
 RUN = AUDIT_RUN or Path(tempfile.mkdtemp(prefix="feathermorphclient-26.2-"))
 REPORT = {"status": "RUNNING", "directory": str(RUN), "checks": [],
-          "scope": "screens" if SCREENS_ONLY else "full",
+          "commandApi": API_VERSION,
+          "scope": "screens" if SCREENS_ONLY else "protocol" if PROTOCOL_ONLY else "full",
+          "animationEntity": ANIMATION_ENTITY or "all",
           "notRun": ["all skills and abilities", "cross-region locator connections", "NeoForge"]}
 CLIENTS = []
 SERVER = None
@@ -63,6 +73,13 @@ def server_command(command):
     SERVER.stdin.flush()
 
 
+def grant_disguise(name, identifier):
+    server_command(f"fm manage grant {name} {identifier}")
+    # Folia schedules console grants on the player's region independently of client commands.
+    until(f"grant {identifier} to {name}",
+          lambda: f"Granted disguise '{identifier}' to {name}" in (RUN / "server.log").read_text())
+
+
 def events(client):
     path = client["dir"] / "events.jsonl"
     records = [json.loads(line) for line in path.read_text().splitlines()] if path.exists() else []
@@ -74,11 +91,11 @@ def events(client):
     return records
 
 
-def action(client, kind, value=""):
+def action(client, kind, value="", delay_ms=2500):
     token = f"{len(REPORT['checks'])}_{kind}"
     path = client["dir"] / "action.json"
     staging = path.with_suffix(".tmp")
-    staging.write_text(json.dumps({"id": token, "type": kind, "value": value}))
+    staging.write_text(json.dumps({"id": token, "type": kind, "value": value, "delayMs": delay_ms}))
     staging.replace(path)
     until(f"{client['name']}: {kind} {value}", lambda: any(r["id"] == token for r in events(client)))
     pass_check(f"{client['name']}: {kind} {value}")
@@ -87,7 +104,9 @@ def action(client, kind, value=""):
 def build_server_probe():
     cache = Path(os.environ.get("GRADLE_USER_HOME", Path.home() / ".gradle")) / "caches/modules-2/files-2.1"
     api = next((cache / "io.papermc.paper/paper-api/26.2.build.124-stable").rglob("*.jar"))
-    classpath = [api] + list((cache / "net.kyori").rglob("*.jar"))
+    classpath = [api]
+    for group in ["net.kyori", "org.jetbrains/annotations", "com.google.guava/guava", "org.jspecify/jspecify"]:
+        classpath.extend((cache / group).rglob("*.jar"))
     classes = RUN / "server-probe-classes"
     classes.mkdir()
     subprocess.run(["javac", "--release", "25", "-cp", os.pathsep.join(map(str, classpath)),
@@ -152,8 +171,9 @@ def start_client(name, runtime, mods, optional=False):
     directory = RUN / name
     (directory / "mods").mkdir(parents=True)
     (directory / "config").mkdir()
-    # Keep production defaults for the protocol; change only display settings for the test machine.
-    (directory / "config/morphclient.json").write_text(json.dumps({"alwaysShowPreviewInInventory": True}))
+    (directory / "config/morphclient.json").write_text(json.dumps({
+        "alwaysShowPreviewInInventory": True, "protocolCompatibilityMode": API_VERSION == 17,
+        "verbosePackets": True}))
     (directory / "options.txt").write_text(
         'version:4903\nenableVsync:false\nmaxFps:30\nrenderDistance:2\nsimulationDistance:5\n'
         'mipmapLevels:0\nentityShadows:false\ngraphicsPreset:"fast"\npreferredGraphicsBackend:"opengl"\n'
@@ -163,6 +183,7 @@ def start_client(name, runtime, mods, optional=False):
     command = [os.environ.get("FM_JAVA", "java"), "-Xmx1G", "-XX:ActiveProcessorCount=2",
                "--enable-native-access=ALL-UNNAMED", "-Dfabric.defaultModDistributionNamespace=official",
                f"-Dfm.probe.dir={directory}", f"-Dfm.probe.address=127.0.0.1:{port}",
+               f"-Dfm.probe.api={API_VERSION}",
                "-cp", os.pathsep.join(runtime), "net.fabricmc.loader.impl.launch.knot.KnotClient",
                "--username", name, "--uuid", str(uuid.UUID(bytes=hashlib.md5(("OfflinePlayer:" + name).encode()).digest(), version=3)),
                "--accessToken", "0", "--version", "26.2", "--versionType", "release",
@@ -175,7 +196,7 @@ def start_client(name, runtime, mods, optional=False):
     client = {"name": name, "dir": directory, "process": process}
     CLIENTS.append(client)
     until(name + " handshake", lambda: any(r["id"] == "handshake" for r in events(client)), 120)
-    pass_check(name + ": registry, startup and API 17 handshake")
+    pass_check(f"{name}: registry, startup, API {API_VERSION} handshake and property precedence/cache")
     return client
 
 
@@ -227,11 +248,18 @@ try:
     for name in ["server.jar", "cache", "libraries", "versions"]:
         subprocess.run(["cp", "-a", "--reflink=auto", str(SEED / name), str(server_dir / name)], check=True)
     (server_dir / "plugins/FeatherMorph").mkdir(parents=True)
+    shutil.copytree(SEED / "plugins/FeatherMorph/mclang", server_dir / "plugins/FeatherMorph/mclang")
     shutil.copy2(plugin, server_dir / "plugins/FeatherMorph.jar")
     shutil.copy2(packet_events, server_dir / "plugins/PacketEvents.jar")
     shutil.copy2(build_server_probe(), server_dir / "plugins/BackendProbe.jar")
-    (server_dir / "plugins/FeatherMorph/config.yml").write_text(
-        "root:\n  check_update: false\n  language:\n    code: en_us\n    single_language: true\n")
+    with zipfile.ZipFile(plugin) as jar:
+        config = yaml.safe_load(jar.read("config.yml"))
+    config["root"]["check_update"] = False
+    config["root"]["language"]["code"] = "en_us"
+    config["root"]["language"]["single_language"] = True
+    config["root"]["client"]["log_incoming_packets"] = True
+    config["root"]["client"]["log_outgoing_packets"] = True
+    (server_dir / "plugins/FeatherMorph/config.yml").write_text(yaml.safe_dump(config, allow_unicode=True))
     (server_dir / "eula.txt").write_text("eula=true\n")
     flat = {"biome": "minecraft:plains", "layers": [{"block": "minecraft:bedrock", "height": 1},
             {"block": "minecraft:dirt", "height": 2}, {"block": "minecraft:grass_block", "height": 1}],
@@ -254,10 +282,10 @@ try:
         server_command(f"tp {name} {0.5 if name == 'MorphActor' else 3.5} -60 0.5")
         for form in FORMS:
             identifier = form if ":" in form else "minecraft:" + form
-            server_command(f"fm manage grant {name} {identifier}")
+            grant_disguise(name, identifier)
     time.sleep(2)
     action(actor, "self", "true")
-    for form in ([] if SCREENS_ONLY else FORMS):
+    for form in ([] if SCREENS_ONLY or PROTOCOL_ONLY else FORMS):
         identifier = form if ":" in form else "minecraft:" + form
         action(actor, "morph", identifier)
         action(observer, "observe_native", identifier)
@@ -265,16 +293,103 @@ try:
             action(actor, "screenshot", form)
             action(observer, "screenshot", form)
         action(actor, "unmorph")
-    server_command("fmclientbackend")
-    until("client backend selected", lambda: "FM_CLIENT_BACKEND_PASS" in (RUN / "server.log").read_text())
-    pass_check("client renderer backend selected in temporary server")
-    for form in ([] if SCREENS_ONLY else ["cow", "slime", "magma_cube", "sulfur_cube", "player:Notch"]):
+    if API_VERSION == 17:
+        action(actor, "morph", "minecraft:cat")
+        action(actor, "legacy_animation", "sit")
+        action(actor, "legacy_animation", "standup")
+        action(actor, "unmorph")
+        grant_disguise("MorphActor", "minecraft:shulker")
+        for name in ["open", "peek"]:
+            action(actor, "morph", "minecraft:shulker")
+            action(actor, "legacy_animation", name, delay_ms=1500 if name == "open" else 1000)
+            action(actor, "screenshot", "legacy-" + name, delay_ms=250)
+            time.sleep(6)
+            action(actor, "temporary", "{}", delay_ms=250)
+            action(actor, "unmorph")
+    if not SCREENS_ONLY:
+        animations = [
+            ("cat", "sit", {"cat/sitting": "true", "cat/lying": "false"}, "standup"),
+            ("cat", "lay", {"cat/sitting": "false", "cat/lying": "true"}, "standup"),
+            ("wolf", "sit", {"wolf/sitting": "true"}, "standup"),
+            ("fox", "sleep", {"fox/status": "SLEEPING"}, "standup"),
+            ("fox", "sit", {"fox/status": "SITTING"}, "standup"),
+            ("panda", "sit", {"panda/sitting": "true"}, "standup"),
+            ("allay", "dance", {"allay/dancing": "true"}, "stop"),
+            ("piglin", "dance", {"piglin/dancing": "true"}, "stop"),
+            ("pufferfish", "inflate", {"pufferfish/puff_state": "LARGE"}, "deflate"),
+            ("creaking", "eye_glow", {"creaking/eyes_glowing": "true"}, "stop_eye_glow"),
+            ("mannequin", "crawl", {"entity/static_pose": "SWIMMING"}, "standup"),
+            ("mannequin", "lay", {"entity/static_pose": "SLEEPING", "living_entity/bed_pos": "[0,-60,0]"}, "standup"),
+            ("player:Notch", "lay", {"entity/static_pose": "SLEEPING", "living_entity/bed_pos": "[0,-60,0]"}, "standup"),
+            ("player:Notch", "crawl", {"entity/static_pose": "SWIMMING"}, "standup"),
+        ]
+        for form, name, expected, reset in animations:
+            if ANIMATION_ENTITY and form != ANIMATION_ENTITY:
+                continue
+            identifier = form if ":" in form else "minecraft:" + form
+            grant_disguise("MorphActor", identifier)
+            action(actor, "morph", identifier)
+            action(actor, "animation", json.dumps({"name": name, "properties": expected}))
+            action(actor, "rebuild", json.dumps(expected))
+            server_command("fmprotocolprobe MorphActor refresh")
+            action(actor, "temporary", json.dumps(expected))
+            action(actor, "animation", json.dumps({"name": reset, "properties": {}}))
+            action(actor, "unmorph")
+        for form, name, expected, duration in [
+                ("armadillo", "rollup", {"armadillo/state": "SCARED"}, 1000),
+                ("shulker", "open", {"shulker/shell_height": "100"}, 1500),
+                ("shulker", "peek", {"shulker/shell_height": "30"}, 1000),
+                ("sniffer", "sniff", {"sniffer/state": "SNIFFING"}, 250),
+                ("frog", "eat", {"entity/static_pose": "USING_TONGUE"}, 250),
+                ("warden", "sniff", {"entity/static_pose": "SNIFFING"}, 1000),
+                ("warden", "roar", {"entity/static_pose": "ROARING"}, 1000)]:
+            if ANIMATION_ENTITY and form != ANIMATION_ENTITY:
+                continue
+            identifier = "minecraft:" + form
+            grant_disguise("MorphActor", identifier)
+            action(actor, "morph", identifier)
+            action(actor, "animation", json.dumps({"name": name, "properties": expected}), delay_ms=duration)
+            if form == "shulker":
+                action(actor, "screenshot", name, delay_ms=250)
+            time.sleep(6)
+            action(actor, "temporary", "{}", delay_ms=250)
+            action(actor, "unmorph")
+        if not ANIMATION_ENTITY or ANIMATION_ENTITY == "warden":
+            action(actor, "morph", "minecraft:warden")
+            action(actor, "animation", json.dumps({"name": "digdown", "properties": {"entity/static_pose": "DIGGING"}}), delay_ms=1000)
+            time.sleep(6)
+            vanished = {"living_entity/invisible": "true"}
+            action(actor, "temporary", json.dumps(vanished), delay_ms=250)
+            action(actor, "rebuild", json.dumps(vanished))
+            server_command("fmprotocolprobe MorphActor refresh")
+            action(actor, "temporary", json.dumps(vanished))
+            for name in ["sniff", "roar"]:
+                action(actor, "animation", json.dumps({"name": name, "properties": vanished}), delay_ms=1000)
+                time.sleep(6)
+                action(actor, "temporary", json.dumps(vanished), delay_ms=250)
+            action(actor, "animation", json.dumps({"name": "appear", "properties": {"entity/static_pose": "EMERGING"}}), delay_ms=1000)
+            time.sleep(6)
+            action(actor, "temporary", "{}", delay_ms=250)
+            action(actor, "unmorph")
+        action(actor, "morph", "minecraft:horse")
+        server_command("fmprotocolprobe MorphActor equipment")
+        action(actor, "equipment")
+        server_command("fmprotocolprobe MorphActor property")
+        action(actor, "persistent", "true")
+        server_command("fmprotocolprobe MorphActor discard")
+        action(actor, "persistent", "false")
+        action(actor, "unmorph")
+    if not PROTOCOL_ONLY:
+        server_command("fmclientbackend")
+        until("client backend selected", lambda: "FM_CLIENT_BACKEND_PASS" in (RUN / "server.log").read_text())
+        pass_check("client renderer backend selected in temporary server")
+    for form in ([] if SCREENS_ONLY or PROTOCOL_ONLY else ["cow", "slime", "magma_cube", "sulfur_cube", "player:Notch"]):
         identifier = form if ":" in form else "minecraft:" + form
         action(actor, "morph", identifier)
         action(observer, "observe", identifier)
         action(actor, "unmorph")
     action(actor, "morph", "minecraft:cow")
-    for screen in ["disguise", "quick", "emote", "inventory", "creative", "config", "close"]:
+    for screen in ([] if PROTOCOL_ONLY else ["disguise", "quick", "emote", "inventory", "creative", "config", "close"]):
         if screen in ["inventory", "creative"]:
             server_command(f"gamemode {'survival' if screen == 'inventory' else 'creative'} MorphActor")
             time.sleep(0.5)

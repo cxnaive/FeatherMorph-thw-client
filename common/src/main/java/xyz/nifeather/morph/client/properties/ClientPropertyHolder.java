@@ -219,10 +219,10 @@ public class ClientPropertyHolder
 
         var existing = getOptional(property).orElse(null);
 
-        if (!value.equals(existing))
+        var hadTemporaryValue = tempProperties.remove(property) != null;
+        persistProperties.put(property, value);
+        if (!value.equals(existing) || hadTemporaryValue)
         {
-            tempProperties.remove(property);
-            persistProperties.put(property, value);
             this.hooksOnPropertyWrite.forEach(l -> l.invoke(property, existing, value));
             //this.hooksOnPropertyWrite.invoke(BiConsumerActions.pair(property, diffIfPossible));
         }
@@ -240,6 +240,7 @@ public class ClientPropertyHolder
 
         var existing = getOptional(property).orElse(null);
 
+        tempProperties.put(property, value);
         if (!value.equals(existing))
         {
             X diffIfPossible;
@@ -249,7 +250,6 @@ public class ClientPropertyHolder
                 diffIfPossible = value;
 
             // `setTemp` only has this differ from `set`... Maybe consider merge these two methods?
-            tempProperties.put(property, value);
             this.hooksOnTemporaryPropertyWrite.invoke(BiConsumerActions.pair(property, diffIfPossible));
         }
     }

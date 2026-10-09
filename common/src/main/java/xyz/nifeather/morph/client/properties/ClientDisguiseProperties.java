@@ -4,6 +4,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import xyz.nifeather.morph.client.properties.impl.*;
 
 import java.util.Map;
@@ -90,6 +91,7 @@ public class ClientDisguiseProperties
     }
 
     private final FallbackPropertyCollection fallbackPropertyHandler = new FallbackPropertyCollection();
+    private final LivingEntityPropertyCollection<LivingEntity> fallbackLivingPropertyHandler = new LivingEntityPropertyCollection<>() {};
 
     public FallbackPropertyCollection fallbackHandler()
     {
@@ -100,7 +102,8 @@ public class ClientDisguiseProperties
     {
         var match = handlerMap.getOrDefault(entity.getType(), null);
 
-        return Optional.of((AbstractPropertyCollection) Objects.requireNonNullElse(match, fallbackPropertyHandler));
+        var fallback = entity instanceof LivingEntity ? fallbackLivingPropertyHandler : fallbackPropertyHandler;
+        return Optional.of(Objects.requireNonNullElse(match, fallback));
     }
 
     public <E extends Entity> void register(EntityType<E> entityType, AbstractPropertyCollection handler)

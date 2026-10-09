@@ -4,7 +4,7 @@
 测试 `fabric/build/libs` 中的生产 JAR。客户端类路径不含项目编译输出，
 也不直接提供协议库，协议类由生产模组的嵌套 JAR 加载。
 
-需要 Java 25、Python 3、可用的 `DISPLAY`（桌面或 Xvfb）、OpenGL 驱动，以及
+需要 Java 25、Python 3、PyYAML、可用的 `DISPLAY`（桌面或 Xvfb）、OpenGL 驱动，以及
 `../FeatherMorph` 已构建的 26.2 插件。默认服务端种子目录为
 `../thw_servers/26.2/test-server`，其中应有 `server.jar`、`cache`、`libraries`、
 `versions` 和 `plugins/packetevents-spigot-2.14.0.jar`。
@@ -15,19 +15,29 @@ DISPLAY=:197 python3 validation/26.2/validate.py
 
 `FM_SERVER_SEED`、`FM_TEST_PORT`、`FM_JAVA` 可覆盖相应路径、端口和 Java 程序。
 `FM_SCREEN_VALIDATION_ONLY=true` 可只重跑握手、界面、相机和自身可见检查。
+该模式下可加 `FM_TEST_API=17`，验证开启兼容模式时的 API 17 会话；默认测试 API 19。
+API 17 兼容测试还包含猫坐下/起身、潜影贝开壳/探头及结束合壳。
+`FM_PROTOCOL_VALIDATION_ONLY=true` 只重跑 API 19 的全部已启用动作、装备和属性检查。
+该模式可加 `FM_ANIMATION_ENTITY=warden` 筛选实体动作，保留装备和属性检查。
 默认选择空闲的回环端口，创建临时平坦世界，客户端使用离线测试账号。
 测试不会重启现有服务器或复制现有世界；测试目录使用本地测试环境的 EULA 接受设置。
 
 ## 覆盖范围
 
 - 生产 JAR 的游戏/Java 版本、资源包格式、嵌套协议库、测试类隔离。
-- 两个客户端启动、五种注册表查询及默认 API 17 的实际 V3 握手。
+- 两个客户端启动、五种注册表查询及关闭兼容模式后的 API 19 实际 V3 握手。
+- 临时/永久属性相等值覆盖、删除恢复和无同步实体时的属性缓存。
 - cow、pig、chicken、cat、wolf、sheep、mooshroom、nautilus、evoker、slime、
   magma cube、sulfur cube、mannequin、copper golem、horse、ender dragon 和玩家形态。
 - 每次实际 `/morph`、自身同步器、实体类型、玩家渲染重定向、默认服务端后端的他人实体、`/unmorph`。
 - 控制台专用测试插件在临时服务器切换至客户端后端，再验证牛、史莱姆、岩浆怪、
   硫磺立方怪及玩家形态的他人同步器与渲染；生产服务端不安装这个测试插件。
 - 史莱姆和岩浆怪尺寸 3；硫磺立方怪的基本形态。
+- 15 种形态的 33 个已启用用户动作组合、持久动作重建/刷新、动作结束清理、床位清理。
+- 检查实际实体的姿态、坐卧、舞蹈、膨胀、眼睛发光、蜷缩和开壳状态。
+- 伪装潜影贝没有临时位置切换产生的传送渲染偏移，普通潜影贝仍按原版合壳和插值。
+- 监守者下潜、隐身保持及重建/刷新，隐藏时嗅闻/咆哮不解除隐身，重新出现后恢复可见。
+- BODY/SADDLE 装备应用、永久属性写入及删除后默认值恢复。
 - 形态选择、快速选择、表情、生存模式背包、创造模式背包、Cloth Config 和关闭界面，
   对各界面实际类型进行断言，避免创造模式自动切换背包造成误判。
 - 第一人称、第三人称、自身可见切换；牛、史莱姆、硫磺立方怪及界面截图。
@@ -37,6 +47,7 @@ DISPLAY=:197 python3 validation/26.2/validate.py
 输出路径在启动时打印。`result.json` 保存结果及产物 SHA-256，`server.log` 和两个
 客户端目录的 `client.log`、`events.jsonl`、`screenshots` 保留证据。失败时也会清理
 本次启动的进程，保留失败目录；测试类仅存在于单独的 `FeatherMorphClientUpgradeProbe.jar`。
+收发协议消息日志在测试环境中启用，便于追踪动画属性的更新与删除。
 服务端测试插件为临时目录内的 `BackendProbe.jar`，仅允许控制台切换测试后端。
 测试检查日志中的错误和未处理异常；已知离线认证与缺少旁白库的环境错误单独记录。
 
@@ -50,3 +61,4 @@ DISPLAY=:197 python3 validation/26.2/validate.py
 SHA-256 未改变，并保留首次结果文件；不会把游戏失败改成通过。
 
 本地运行结果见 [2026-10-10 记录](runs/2026-10-10-lophine.md)。
+API 19 升级后的运行见 [协议升级记录](runs/2026-10-10-api19.md)。

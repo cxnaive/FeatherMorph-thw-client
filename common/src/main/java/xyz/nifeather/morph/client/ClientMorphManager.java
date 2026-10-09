@@ -70,6 +70,24 @@ public class ClientMorphManager extends MorphClientObject
 
     //todo: Pure history shit, remove this after we have done implementing OutputHandle on the client.
     private final Map<Integer, Map<String, String>> storedProperties = new ConcurrentHashMap<>();
+    private final Map<Integer, Map<String, String>> storedTemporaryProperties = new ConcurrentHashMap<>();
+
+    public Map<String, String> getTemporaryPropertiesFor(int id)
+    {
+        return storedTemporaryProperties.getOrDefault(id, Map.of());
+    }
+
+    public void mergeTemporaryPropertiesFor(int id, Map<String, String> input)
+    {
+        storedTemporaryProperties.computeIfAbsent(id, ignored -> new ConcurrentHashMap<>()).putAll(input);
+    }
+
+    public void discardTemporaryPropertiesFor(int id, Collection<String> names)
+    {
+        var properties = storedTemporaryProperties.get(id);
+        if (properties != null)
+            names.forEach(properties::remove);
+    }
 
     public Map<String, String> getNetworkPropertiesFor(int id)
     {
@@ -87,6 +105,7 @@ public class ClientMorphManager extends MorphClientObject
 
     public void discardPropertiesFor(int id, List<String> propertiesToDiscard)
     {
+        discardTemporaryPropertiesFor(id, propertiesToDiscard);
         var properties = storedProperties.getOrDefault(id, null);
         if (properties == null) return;
 
@@ -95,6 +114,7 @@ public class ClientMorphManager extends MorphClientObject
 
     public void mergeNetworkPropertiesFor(int id, Map<String, String> input)
     {
+        discardTemporaryPropertiesFor(id, input.keySet());
         var map = getNetworkPropertiesFor(id);
         map.putAll(input);
 
@@ -104,6 +124,7 @@ public class ClientMorphManager extends MorphClientObject
     public void dropNetworkPropertiesFor(int id)
     {
         storedProperties.remove(id);
+        storedTemporaryProperties.remove(id);
     }
 
     //endregion
@@ -346,6 +367,8 @@ public class ClientMorphManager extends MorphClientObject
 
     public void reset()
     {
+        storedProperties.clear();
+        storedTemporaryProperties.clear();
         this.clearAvailableDisguises();
 
         this.setEmotes(List.of());
@@ -456,6 +479,13 @@ public class ClientMorphManager extends MorphClientObject
         syncer.propertyHolder().updateFromPropertiesInput(properties).forEach((p, v) ->
         {
             ((ClientProperty<Object, Entity>) p).apply(entity, v);
+        });
+
+        syncer.propertyHolder().deserializeProperties(getTemporaryPropertiesFor(player.getId())).forEach((p, v) ->
+        {
+            var property = (ClientProperty<Object, Entity>) p;
+            syncer.propertyHolder().setTemp(property, v);
+            property.apply(entity, v);
         });
 
         return syncer;
