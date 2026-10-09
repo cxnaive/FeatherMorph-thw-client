@@ -23,16 +23,17 @@ FORMS = ["cow", "pig", "chicken", "cat", "wolf", "sheep", "mooshroom", "nautilus
 AUDIT_RUN = Path(sys.argv[2]).resolve() if len(sys.argv) == 3 and sys.argv[1] == "--audit-run" else None
 SCREENS_ONLY = os.environ.get("FM_SCREEN_VALIDATION_ONLY") == "true"
 PROTOCOL_ONLY = os.environ.get("FM_PROTOCOL_VALIDATION_ONLY") == "true"
+SKILLS_ONLY = os.environ.get("FM_SKILL_VALIDATION_ONLY") == "true"
 ANIMATION_ENTITY = os.environ.get("FM_ANIMATION_ENTITY", "")
-assert not (SCREENS_ONLY and PROTOCOL_ONLY), "Select one focused validation mode"
+assert sum([SCREENS_ONLY, PROTOCOL_ONLY, SKILLS_ONLY]) <= 1, "Select one focused validation mode"
 assert not ANIMATION_ENTITY or PROTOCOL_ONLY, "Entity filtering requires FM_PROTOCOL_VALIDATION_ONLY=true"
 API_VERSION = int(os.environ.get("FM_TEST_API", "19"))
 assert API_VERSION in [17, 19], "FM_TEST_API must be 17 or 19"
-assert API_VERSION == 19 or SCREENS_ONLY, "API 17 compatibility checks require FM_SCREEN_VALIDATION_ONLY=true"
+assert API_VERSION == 19 or SCREENS_ONLY or SKILLS_ONLY, "API 17 compatibility checks require a screen or skill validation scope"
 RUN = AUDIT_RUN or Path(tempfile.mkdtemp(prefix="feathermorphclient-26.2-"))
 REPORT = {"status": "RUNNING", "directory": str(RUN), "checks": [],
           "commandApi": API_VERSION,
-          "scope": "screens" if SCREENS_ONLY else "protocol" if PROTOCOL_ONLY else "full",
+          "scope": "skills" if SKILLS_ONLY else "screens" if SCREENS_ONLY else "protocol" if PROTOCOL_ONLY else "full",
           "animationEntity": ANIMATION_ENTITY or "all",
           "notRun": ["all skills and abilities", "cross-region locator connections", "NeoForge"]}
 CLIENTS = []
@@ -78,6 +79,15 @@ def grant_disguise(name, identifier):
     # Folia schedules console grants on the player's region independently of client commands.
     until(f"grant {identifier} to {name}",
           lambda: f"Granted disguise '{identifier}' to {name}" in (RUN / "server.log").read_text())
+
+
+def prepare_skill():
+    path = RUN / "server.log"
+    offset = len(path.read_text())
+    server_command("fmprotocolprobe MorphActor skill_ready")
+    until("skill cooldown reset on player owner region",
+          lambda: "FM_CLIENT_PROTOCOL_PASS skill_ready" in path.read_text()[offset:])
+    time.sleep(0.1)
 
 
 def events(client):
@@ -285,7 +295,7 @@ try:
             grant_disguise(name, identifier)
     time.sleep(2)
     action(actor, "self", "true")
-    for form in ([] if SCREENS_ONLY or PROTOCOL_ONLY else FORMS):
+    for form in ([] if SCREENS_ONLY or PROTOCOL_ONLY or SKILLS_ONLY else FORMS):
         identifier = form if ":" in form else "minecraft:" + form
         action(actor, "morph", identifier)
         action(observer, "observe_native", identifier)
@@ -293,7 +303,34 @@ try:
             action(actor, "screenshot", form)
             action(observer, "screenshot", form)
         action(actor, "unmorph")
-    if API_VERSION == 17:
+    if SKILLS_ONLY:
+        server_command("gamemode survival MorphActor")
+        server_command("time set noon")
+        action(actor, "passive", json.dumps({"flight": False, "night": False, "speed": 0.05}), delay_ms=1000)
+        action(actor, "morph", "minecraft:pig")
+        prepare_skill()
+        action(actor, "skill", json.dumps({"equipment": True}), delay_ms=300)
+        prepare_skill()
+        action(actor, "skill", json.dumps({"equipment": False}), delay_ms=300)
+        action(actor, "unmorph")
+        for form in ["ghast", "warden", "bat"]:
+            grant_disguise("MorphActor", "minecraft:" + form)
+            action(actor, "morph", "minecraft:" + form)
+            action(observer, "observe_native", "minecraft:" + form)
+            if form == "bat":
+                action(actor, "passive", json.dumps({"flight": True, "night": True}), delay_ms=500)
+            else:
+                prepare_skill()
+                action(actor, "skill", json.dumps({"charging": True} if form == "ghast" else {"sonic": True}), delay_ms=300)
+                action(actor, "skill_state", json.dumps({"charging": False} if form == "ghast" else {}), delay_ms=2000)
+                action(actor, "passive", json.dumps({"flight": form == "ghast", "night": False}), delay_ms=500)
+            action(actor, "unmorph")
+            if form == "bat":
+                action(actor, "passive", json.dumps({"flight": False, "night": True, "speed": 0.05}), delay_ms=250)
+            action(actor, "passive", json.dumps({"flight": False, "night": False, "speed": 0.05}),
+                   delay_ms=16000 if form == "bat" else 1500)
+        REPORT["notRun"].append("real client validation of every active/passive effect (full server matrix is in ../FeatherMorph)")
+    if API_VERSION == 17 and not SKILLS_ONLY:
         action(actor, "morph", "minecraft:cat")
         action(actor, "legacy_animation", "sit")
         action(actor, "legacy_animation", "standup")
@@ -306,7 +343,7 @@ try:
             time.sleep(6)
             action(actor, "temporary", "{}", delay_ms=250)
             action(actor, "unmorph")
-    if not SCREENS_ONLY:
+    if not SCREENS_ONLY and not SKILLS_ONLY:
         animations = [
             ("cat", "sit", {"cat/sitting": "true", "cat/lying": "false"}, "standup"),
             ("cat", "lay", {"cat/sitting": "false", "cat/lying": "true"}, "standup"),
@@ -379,17 +416,17 @@ try:
         server_command("fmprotocolprobe MorphActor discard")
         action(actor, "persistent", "false")
         action(actor, "unmorph")
-    if not PROTOCOL_ONLY:
+    if not PROTOCOL_ONLY and not SKILLS_ONLY:
         server_command("fmclientbackend")
         until("client backend selected", lambda: "FM_CLIENT_BACKEND_PASS" in (RUN / "server.log").read_text())
         pass_check("client renderer backend selected in temporary server")
-    for form in ([] if SCREENS_ONLY or PROTOCOL_ONLY else ["cow", "slime", "magma_cube", "sulfur_cube", "player:Notch"]):
+    for form in ([] if SCREENS_ONLY or PROTOCOL_ONLY or SKILLS_ONLY else ["cow", "slime", "magma_cube", "sulfur_cube", "player:Notch"]):
         identifier = form if ":" in form else "minecraft:" + form
         action(actor, "morph", identifier)
         action(observer, "observe", identifier)
         action(actor, "unmorph")
     action(actor, "morph", "minecraft:cow")
-    for screen in ([] if PROTOCOL_ONLY else ["disguise", "quick", "emote", "inventory", "creative", "config", "close"]):
+    for screen in ([] if PROTOCOL_ONLY or SKILLS_ONLY else ["disguise", "quick", "emote", "inventory", "creative", "config", "close"]):
         if screen in ["inventory", "creative"]:
             server_command(f"gamemode {'survival' if screen == 'inventory' else 'creative'} MorphActor")
             time.sleep(0.5)

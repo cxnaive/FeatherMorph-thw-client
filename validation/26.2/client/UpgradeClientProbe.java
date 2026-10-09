@@ -30,9 +30,13 @@ import net.minecraft.world.entity.animal.fish.Pufferfish;
 import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.monster.Shulker;
+import net.minecraft.world.entity.monster.Ghast;
+import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.entity.monster.cubemob.AbstractCubeMob;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
+import xyz.nifeather.morph.client.ClientSkillHandler;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.entities.IDisguiseRenderState;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
@@ -47,6 +51,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.ClientPropertyHolder;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 import xyz.nifeather.morph.network.commands.C2S.C2SRequestAnimationCommand;
+import xyz.nifeather.morph.network.commands.C2S.C2SActivateSkillCommand;
 import xyz.nifeather.morph.network.commands.S2C.S2CUpdatePropertiesCommand;
 import xyz.nifeather.morph.network.commands.S2C.S2CDiscardPropertiesCommand;
 import xyz.nifeather.morph.network.commands.S2C.S2CUpdateTemporaryPropertiesCommand;
@@ -199,6 +204,8 @@ public final class UpgradeClientProbe implements ClientModInitializer
                     new C2SRequestAnimationCommand(gson.fromJson(action.value(), com.google.gson.JsonObject.class).get("name").getAsString()));
             case "legacy_animation" -> FeatherMorphClientBootstrap.getInstance().serverHandler.sendCommand(
                     new C2SRequestAnimationCommand(action.value()));
+            case "skill" -> FeatherMorphClientBootstrap.getInstance().serverHandler.sendCommand(new C2SActivateSkillCommand());
+            case "skill_state", "passive" -> { }
             case "rebuild" -> {
                 var manager = FeatherMorphClientBootstrap.getInstance().morphManager;
                 try {
@@ -223,6 +230,28 @@ public final class UpgradeClientProbe implements ClientModInitializer
     private void check(Minecraft minecraft, Action action)
     {
         var bootstrap = FeatherMorphClientBootstrap.getInstance();
+        if (action.type().equals("skill") || action.type().equals("skill_state")) {
+            var expected = gson.fromJson(action.value(), com.google.gson.JsonObject.class);
+            var cooldown = skillHandler();
+            require(cooldown.getSkillCooldown() > 0, "server reports skill cooldown");
+            require(cooldown.getCurrentCooldown() >= 0 && cooldown.getCurrentCooldown() < cooldown.getSkillCooldown(), "client cooldown counts down");
+            var syncer = ClientDisguiseSyncer.getCurrentInstance();
+            if (expected.has("equipment")) {
+                boolean displaying = syncer.propertyHolder().getOr("entity/display_disguise_equipment", false);
+                require(displaying == expected.get("equipment").getAsBoolean(), "skill toggles disguise equipment property");
+            }
+            if (expected.has("charging"))
+                require(((Ghast) syncer.getDisguiseInstance()).isCharging() == expected.get("charging").getAsBoolean(), "ghast skill charge state");
+            if (expected.has("sonic"))
+                require(((Warden) syncer.getDisguiseInstance()).sonicBoomAnimationState.isStarted(), "warden skill starts sonic animation");
+        }
+        if (action.type().equals("passive")) {
+            var expected = gson.fromJson(action.value(), com.google.gson.JsonObject.class);
+            require(minecraft.player.getAbilities().mayfly == expected.get("flight").getAsBoolean(), "passive flight permission synchronized");
+            if (expected.has("speed"))
+                require(Math.abs(minecraft.player.getAbilities().getFlyingSpeed() - expected.get("speed").getAsFloat()) < 0.001, "passive flight speed synchronized");
+            require(minecraft.player.hasEffect(MobEffects.NIGHT_VISION) == expected.get("night").getAsBoolean(), "passive potion effect synchronized/cleared");
+        }
         if (action.type().equals("animation")) {
             var expected = gson.fromJson(action.value(), com.google.gson.JsonObject.class).getAsJsonObject("properties");
             verifyTemporary(minecraft, gson.fromJson(expected, Map.class));
@@ -318,6 +347,15 @@ public final class UpgradeClientProbe implements ClientModInitializer
             }, "screen transition: " + screen);
         }
         if (action.type().equals("screenshot") || action.type().equals("screen")) Screenshot.grab(minecraft, false);
+    }
+
+    private ClientSkillHandler skillHandler()
+    {
+        try {
+            var field = FeatherMorphClientBootstrap.class.getDeclaredField("skillHandler");
+            field.setAccessible(true);
+            return (ClientSkillHandler) field.get(FeatherMorphClientBootstrap.getInstance());
+        } catch (ReflectiveOperationException e) { throw new RuntimeException(e); }
     }
 
     private static void verifyPropertyHolder()

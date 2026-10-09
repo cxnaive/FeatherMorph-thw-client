@@ -30,7 +30,9 @@ public final class BackendProbe extends JavaPlugin
                 player.getScheduler().run(this, task -> {
                     try {
                         var state = manager.getClass().getMethod("getDisguiseStateFor", Player.class).invoke(manager, player);
-                        if (args[1].equals("equipment")) {
+                        if (args[1].equals("skill_ready")) {
+                            state.getClass().getMethod("setSkillCooldown", long.class, boolean.class).invoke(state, 0L, true);
+                        } else if (args[1].equals("equipment")) {
                             var equipmentClass = Class.forName("xyz.nifeather.morph.misc.DisguiseEquipment", true, loader);
                             var equipment = equipmentClass.getConstructor(Map.class).newInstance(Map.of(
                                     EquipmentSlot.BODY, new ItemStack(Material.IRON_HORSE_ARMOR),
