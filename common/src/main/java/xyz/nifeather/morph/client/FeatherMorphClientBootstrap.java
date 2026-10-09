@@ -308,7 +308,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         {
             if (testKeyBindGrant.consumeClick())
             {
-                var toasts = client.getToastManager();
+                var toasts = client.gui.toastManager();
                 var morphs = morphManager.getAvailableMorphs();
                 var random = RandomSource.create();
                 var id = morphs.get(random.nextIntBetweenInclusive(0, morphs.size() - 1));
@@ -318,7 +318,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
 
             if (testKeyBindLost.consumeClick())
             {
-                var toasts = client.getToastManager();
+                var toasts = client.gui.toastManager();
                 toasts.addToast(new RequestToast(S2CUpdateRequestStatusCommand.Type.RequestSend, "Very_Loooong_Nammmmmme"));
             }
 
@@ -341,9 +341,9 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
             {
                 serverHandler.sendCommand(new C2SMorphCommand(null, Collections.emptyMap()));
             }
-            else if (client.screen == null)
+            else if (client.gui.screen() == null)
             {
-                client.setScreen(new WaitingForServerScreen(new DisguiseScreen()));
+                client.gui.setScreen(new WaitingForServerScreen(new DisguiseScreen()));
             }
         }
 
@@ -354,10 +354,10 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         }
 
         while (emoteKeyBind.consumeClick())
-            Minecraft.getInstance().setScreen(new WaitingForServerScreen(new EmoteScreen()));
+            Minecraft.getInstance().gui.setScreen(new WaitingForServerScreen(new EmoteScreen()));
 
         while (savedDisguiseSelectionKeybind.consumeClick())
-            Minecraft.getInstance().setScreen(new WaitingForServerScreen(new QuickDisguiseScreen()));
+            Minecraft.getInstance().gui.setScreen(new WaitingForServerScreen(new QuickDisguiseScreen()));
     }
 
     @Nullable
@@ -504,7 +504,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         ).addEntry(
                 entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.protocol_compatibility_mode"), modConfigData.protocolCompatibilityMode)
                         .setTooltip(Component.translatable("option.morphclient.protocol_compatibility_mode.tooltip"))
-                        .setDefaultValue(false)
+                        .setDefaultValue(true)
                         .setSaveConsumer(v ->
                         {
                             modConfigData.protocolCompatibilityMode = v;

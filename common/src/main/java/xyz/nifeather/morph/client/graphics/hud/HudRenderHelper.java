@@ -97,7 +97,7 @@ public class HudRenderHelper extends MorphClientObject
 
     public void onRender(GuiGraphicsExtractor context, DeltaTracker renderTickCounter)
     {
-        if (manager == null || drawAlpha.get() == 0f || Minecraft.getInstance().options.hideGui) return;
+        if (manager == null || drawAlpha.get() == 0f || Minecraft.getInstance().gui.hud.isHidden()) return;
 
         var matrices = context.pose();
 

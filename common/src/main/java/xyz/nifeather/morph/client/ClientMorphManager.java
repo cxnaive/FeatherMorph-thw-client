@@ -264,7 +264,7 @@ public class ClientMorphManager extends MorphClientObject
         DisguiseEntryToast.invalidateAll();
 
         if (displayToasts)
-            Minecraft.getInstance().getToastManager().addToast(new NewDisguiseSetToast(availableMorphs.size() <= 0));
+            Minecraft.getInstance().gui.toastManager().addToast(new NewDisguiseSetToast(availableMorphs.size() <= 0));
     }
 
     public void addDisguises(List<String> identifiers, boolean displayToasts)
@@ -301,7 +301,7 @@ public class ClientMorphManager extends MorphClientObject
         availableMorphs.add(identifier);
 
         if (displayToasts)
-            Minecraft.getInstance().getToastManager().addToast(new DisguiseEntryToast(identifier, true));
+            Minecraft.getInstance().gui.toastManager().addToast(new DisguiseEntryToast(identifier, true));
     }
 
     private void removeDisguisePrivate(String identifier, boolean displayToasts)
@@ -309,7 +309,7 @@ public class ClientMorphManager extends MorphClientObject
         availableMorphs.remove(identifier);
 
         if (displayToasts)
-            Minecraft.getInstance().getToastManager().addToast(new DisguiseEntryToast(identifier, false));
+            Minecraft.getInstance().gui.toastManager().addToast(new DisguiseEntryToast(identifier, false));
     }
 
     //endregion Add/Remove/Set disguises

@@ -271,7 +271,7 @@ public abstract class FeatherScreen extends Screen implements IMDrawable
 
     protected boolean isCurrent()
     {
-        return Minecraft.getInstance().screen == this;
+        return Minecraft.getInstance().gui.screen() == this;
     }
 
     protected void onScreenResize()
@@ -297,7 +297,7 @@ public abstract class FeatherScreen extends Screen implements IMDrawable
 
     protected void push(FeatherScreen screen)
     {
-        Minecraft.getInstance().setScreen(screen);
+        Minecraft.getInstance().gui.setScreen(screen);
     }
 
     //region Narratable Selectable

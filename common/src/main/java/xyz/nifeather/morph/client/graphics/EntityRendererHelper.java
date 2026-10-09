@@ -145,7 +145,7 @@ public class EntityRendererHelper
         }
 
         //System.out.println("Submit! For name " + revealName);
-        collector.submitNameTag(renderPoseStack, Vec3.ZERO, 0, Component.literal(revealName).withColor(textColor), true, LightCoordsUtil.FULL_BRIGHT, 0, cameraRenderState);
+        collector.submitNameTag(renderPoseStack, Vec3.ZERO, 0, Component.literal(revealName).withColor(textColor), true, LightCoordsUtil.FULL_BRIGHT, cameraRenderState);
         renderPoseStack.popPose();
     }
 

@@ -221,7 +221,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     private void pickReportingProtocol()
     {
         this.reportingProtocolVersion = FeatherMorphClientBootstrap.getInstance().getModConfigData().protocolCompatibilityMode
-               ? 17
+               ? Constants.ApiLevel.PROPERTY_INPUT_IN_MORPH_COMMAND.protocolVersion
                : getImplmentingApiVersion();
     }
 

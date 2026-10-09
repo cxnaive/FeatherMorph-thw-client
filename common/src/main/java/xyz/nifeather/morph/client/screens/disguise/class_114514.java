@@ -79,9 +79,9 @@ public class class_114514
             if (confirmed)
                 Util.getPlatform().openUri(url);
 
-            client.setScreen(this.parentScreen);
+            client.gui.setScreen(this.parentScreen);
         }, text, text2);
 
-        client.setScreen(screen);
+        client.gui.setScreen(screen);
     }
 }

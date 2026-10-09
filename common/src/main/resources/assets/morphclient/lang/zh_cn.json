@@ -63,6 +63,8 @@
   "option.morphclient.scrollSpeed.name": "变形形态列表滚动速度",
   "option.morphclient.singleplayer_debug": "启用FeatherMorph精简服务器",
   "option.morphclient.singleplayer_debug.tooltip": "需要重启！其他玩家也需要启用这个！",
+  "option.morphclient.protocol_compatibility_mode": "协议兼容模式",
+  "option.morphclient.protocol_compatibility_mode.tooltip": "报告 API 17，以兼容 FeatherMorph 26.2 服务端。\n修改后需要重新连接服务器。",
   "option.morphclient.smoothscroll.description": "禁用此选项可能会改进和 Smooth Scrolling 的兼容",
   "option.morphclient.smoothscroll.name": "形态选择中的平滑滚动",
   "option.morphclient.toast_progress": "显示弹窗剩余时间",

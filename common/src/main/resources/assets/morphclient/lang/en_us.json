@@ -64,7 +64,7 @@
   "option.morphclient.singleplayer_debug": "Enable FeatherMorph lite server",
   "option.morphclient.singleplayer_debug.tooltip": "Requires restart! Other players need to enable this as well!",
   "option.morphclient.protocol_compatibility_mode": "Protocol \"Compatibility\" Mode",
-  "option.morphclient.protocol_compatibility_mode.tooltip": "Report this mod is implementing API 17, so that you won't have a limited experience on 1.21.11 servers.\nThis option may be removed at any time.",
+  "option.morphclient.protocol_compatibility_mode.tooltip": "Report API 17 for compatibility with FeatherMorph 26.2.\nReconnect after changing this option.",
   "option.morphclient.disguise_list_mouse_drag.description": "Drag the cursor to to scroll the disguise list.\nMight be useful when using TouchController mod",
   "option.morphclient.disguise_list_mouse_drag.name": "Drag for scroll",
   "option.morphclient.toast_progress": "Display toast progress",

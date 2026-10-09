@@ -19,10 +19,17 @@ See [the plugin](https://github.com/NiFeather/FeatherMorph)
 - [x] 一键切换自身可见
 
 ### 依赖关系
-FeatherMorphClient至少需要下面这些依赖才能运行：
-- Fabric, Quilt 1.19.3 或 NeoForge 1.21.5
+当前维护分支针对 Minecraft **26.2**，需要 Java **25**，至少需要下面这些依赖才能运行：
+- Fabric Loader **0.19.5** 或更新版本
 - [Cloth Config](https://modrinth.com/mod/cloth-config)
-- [Fabric API](https://modrinth.com/mod/fabric-api) (NeoForge不需要)
+- [Fabric API](https://modrinth.com/mod/fabric-api) 的 26.2 版本
+
+推荐 Cloth Config **26.2.155**、Fabric API **0.161.0+26.2**；Mod Menu **20.0.3** 为可选依赖。
+本分支只构建 Fabric，NeoForge 源码保留，但尚未移植到 26.2。
+
+配套服务端为 `../FeatherMorph` 的 26.2 版本。新配置默认启用协议兼容模式（API 17）；
+已有配置若关闭了此选项，需要在模组设置中启用后重新连接服务器。
+参见 [26.2 升级说明](docs/26.2-upgrade.md) 和 [集成验证](validation/26.2/README.md)。
 
 ### 构建
 ```bash
@@ -33,7 +40,8 @@ cd FeatherMorphClient
 ./gradlew build --no-daemon
 ```
 
-生成的文件将位于`fabric/build/libs`或`neoforge/build/libs`中，`client-x.x.x.jar`就是构建出来的插件。
+生成的模组位于 `fabric/build/libs/feathermorph_client-fabric-26.2-<版本>.jar`。
+带 `-sources` 的文件是源码包，运行时使用不带该后缀的 JAR。
 
 ### Credits
 - [Identity Mod](https://github.com/Draylar/identity): For how I learned to make client-side disguise possible.

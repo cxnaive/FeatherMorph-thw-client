@@ -10,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.players.NameAndId;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -31,8 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MorphLocalPlayer extends RemotePlayer
 {
-    private final Tuple<Integer, GameProfile> currentProfilePair = new Tuple<>(0, null);
-
     private final String playerName;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -66,9 +63,6 @@ public class MorphLocalPlayer extends RemotePlayer
 
         this.model = prevPlayer.model;
 
-        this.currentProfilePair.setA(requestId);
-        this.currentProfilePair.setB(prevPlayer.currentProfilePair.getB());
-
         this.skinTextureUrl = prevPlayer.skinTextureUrl;
     }
 
@@ -101,9 +95,6 @@ public class MorphLocalPlayer extends RemotePlayer
         //this.bindingPlayer = bindingPlayer;
 
         this.playerName = initialProfile.name();
-
-        currentProfilePair.setA(0);
-        currentProfilePair.setB(initialProfile);
 
         this.entityData.set(DATA_PLAYER_MODE_CUSTOMISATION, (byte)127);
         this.updateSkin(initialProfile, true);
@@ -289,7 +280,7 @@ public class MorphLocalPlayer extends RemotePlayer
     public double distanceToSqr(Vec3 vector)
     {
         // compat with 3d skin layers
-        if (vector.equals(Minecraft.getInstance().gameRenderer.getMainCamera().position()))
+        if (vector.equals(Minecraft.getInstance().gameRenderer.mainCamera().position()))
             return 0d;
 
         return super.distanceToSqr(vector);

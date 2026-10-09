@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.syncers.animations;
 
+import net.minecraft.world.entity.EntityTypes;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.syncers.animations.impl.*;
 
@@ -13,22 +14,22 @@ public class AnimHandlerIndex
 
     public AnimHandlerIndex()
     {
-        register(EntityType.WARDEN, new WardenAnimationHandler());
-        register(EntityType.SNIFFER, new SnifferAnimationHandler());
-        register(EntityType.ALLAY, new AllayAnimationHandler());
-        register(EntityType.ARMADILLO, new ArmadilloAnimationHandler());
-        register(EntityType.SHULKER, new ShulkerAnimationHandler());
-        register(EntityType.CAT, new CatAnimationHandler());
-        register(EntityType.PARROT, new ParrotAnimationHandler());
-        register(EntityType.PIGLIN, new PiglinAnimationHandler());
-        register(EntityType.PUFFERFISH, new PufferfishAnimationHandler());
-        register(EntityType.FOX, new FoxAnimationHandler());
-        register(EntityType.FROG, new FrogAnimationHandler());
-        register(EntityType.PANDA, new PandaAnimationHandler());
-        register(EntityType.WOLF, new WolfAnimationHandler());
-        register(EntityType.PLAYER, new PlayerAnimationHandler());
-        register(EntityType.CREAKING, new CreakingAnimationHandler());
-        register(EntityType.MANNEQUIN, new MannequinAnimationHandler());
+        register(EntityTypes.WARDEN, new WardenAnimationHandler());
+        register(EntityTypes.SNIFFER, new SnifferAnimationHandler());
+        register(EntityTypes.ALLAY, new AllayAnimationHandler());
+        register(EntityTypes.ARMADILLO, new ArmadilloAnimationHandler());
+        register(EntityTypes.SHULKER, new ShulkerAnimationHandler());
+        register(EntityTypes.CAT, new CatAnimationHandler());
+        register(EntityTypes.PARROT, new ParrotAnimationHandler());
+        register(EntityTypes.PIGLIN, new PiglinAnimationHandler());
+        register(EntityTypes.PUFFERFISH, new PufferfishAnimationHandler());
+        register(EntityTypes.FOX, new FoxAnimationHandler());
+        register(EntityTypes.FROG, new FrogAnimationHandler());
+        register(EntityTypes.PANDA, new PandaAnimationHandler());
+        register(EntityTypes.WOLF, new WolfAnimationHandler());
+        register(EntityTypes.PLAYER, new PlayerAnimationHandler());
+        register(EntityTypes.CREAKING, new CreakingAnimationHandler());
+        register(EntityTypes.MANNEQUIN, new MannequinAnimationHandler());
     }
 
     public void register(EntityType<?> type, AnimationHandler handler)

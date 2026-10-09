@@ -2,8 +2,7 @@
   "required": false,
   "minVersion": "0.8",
   "package": "xyz.nifeather.morph.client.mixin",
-  "refmap": "feathermorph_client.refmap.json",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "mixins": [
   ],
   "client": [

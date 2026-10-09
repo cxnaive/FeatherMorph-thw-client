@@ -32,7 +32,8 @@ public class ModConfigData implements ConfigData
     public boolean disguiseListMouseDragging = false;
 
     @ApiStatus.Experimental
-    public boolean protocolCompatibilityMode = false;
+    // FeatherMorph 26.2 currently implements API 17; this client also understands API 19.
+    public boolean protocolCompatibilityMode = true;
 
     public boolean clientViewVisible()
     {

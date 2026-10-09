@@ -14,7 +14,7 @@ public class ClientRequestManager extends MorphClientObject
     {
         if (type == S2CUpdateRequestStatusCommand.Type.Unknown) return;
 
-        Minecraft.getInstance().getToastManager().addToast(new RequestToast(type, sourceName));
+        Minecraft.getInstance().gui.toastManager().addToast(new RequestToast(type, sourceName));
         requests.add(new Request(plugin.getCurrentTick(), type, sourceName));
     }
 

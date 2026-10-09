@@ -266,7 +266,7 @@ public class DisguiseScreen extends FeatherScreen
         {
             var screen = FeatherMorphClientBootstrap.getInstance().getFactory(this).build();
 
-            Minecraft.getInstance().setScreen(screen);
+            Minecraft.getInstance().gui.setScreen(screen);
         }));
 
         var selfVisibleToggle = this.createToggleSelfButton();

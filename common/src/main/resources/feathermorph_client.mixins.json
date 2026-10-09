@@ -2,8 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "xyz.nifeather.morph.client.mixin",
-  "refmap": "feathermorph_client.refmap.json",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "mixins": [
     "AllayMixin",
     "CreeperMixin",
@@ -41,6 +40,7 @@
     "LocalPlayerMixin",
     "ClientWorldMixin",
     "CreativeInventoryMixin",
+    "GuiMixin",
     "EntityRenderDispatcherMixin",
     "EntityRendererMixin",
     "EntityRenderStateMixin",

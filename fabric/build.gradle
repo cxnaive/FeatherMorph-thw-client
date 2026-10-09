@@ -12,7 +12,6 @@ dependencies {
     api("me.shedaniel.cloth:cloth-config-fabric:${clothconfig_version}")
 
     implementation("com.github.NiFeather:feathermorph-protocols:$protocolVersion")
-    implementation("me.shedaniel.cloth:cloth-config-fabric:${clothconfig_version}")
     api("com.terraformersmc:modmenu:${modmenu_version}")
 
     implementation("com.github.NiFeather:feathermorph-command-compat-layer:${compat_layer_version}")
@@ -25,9 +24,6 @@ loom {
     def aw = project(':common').file("src/main/resources/${mod_id}.accesswidener")
     if (aw.exists()) {
         accessWidenerPath.set(aw)
-    }
-    mixin {
-        defaultRefmapName.set("${mod_id}.refmap.json")
     }
     runs {
         client {
@@ -42,5 +38,34 @@ loom {
             ideConfigGenerated(true)
             runDir('runs/server')
         }
+    }
+}
+
+// The probe is a separate mod used only by the isolated 26.2 validation runner.
+def compileUpgradeClientProbe = tasks.register('compileUpgradeClientProbe', JavaCompile) {
+    dependsOn tasks.named('classes')
+    source rootProject.file('validation/26.2/client')
+    classpath = sourceSets.main.compileClasspath + sourceSets.main.output
+    destinationDirectory = layout.buildDirectory.dir('validation/probe-classes')
+    options.release = 25
+}
+
+tasks.register('upgradeClientProbeJar', Jar) {
+    dependsOn compileUpgradeClientProbe
+    from compileUpgradeClientProbe.flatMap { it.destinationDirectory }
+    from rootProject.file('validation/26.2/client/fabric.mod.json')
+    archiveFileName = 'FeatherMorphClientUpgradeProbe.jar'
+    destinationDirectory = layout.buildDirectory.dir('validation')
+}
+
+tasks.register('prepareUpgradeClientRuntime') {
+    dependsOn tasks.named('downloadAssets'), tasks.named('upgradeClientProbeJar')
+    def runtimeFile = layout.buildDirectory.file('validation/runtime.json')
+    outputs.file runtimeFile
+    doLast {
+        runtimeFile.get().asFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([
+                classpath: configurations.runtimeClasspath.files.collect { it.absolutePath },
+                assetsDir: new File(gradle.gradleUserHomeDir, 'caches/fabric-loom/assets').absolutePath
+        ]))
     }
 }

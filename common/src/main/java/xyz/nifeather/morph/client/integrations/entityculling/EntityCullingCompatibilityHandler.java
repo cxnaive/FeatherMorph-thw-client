@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client.integrations.entityculling;
 
 import dev.tr7zw.entityculling.EntityCullingModBase;
-import dev.tr7zw.entityculling.versionless.access.Cullable;
+import dev.tr7zw.entityculling.access.Cullable;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 

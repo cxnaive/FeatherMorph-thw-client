@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.server.misc;
 
+import net.minecraft.world.entity.EntityTypes;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import net.minecraft.network.chat.Component;
@@ -8,6 +9,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.server.disguise.providers.AbstractDisguiseProvider;
+import xyz.nifeather.morph.shared.EntityTypeLookup;
 
 public class DisguiseMeta
 {
@@ -82,11 +84,11 @@ public class DisguiseMeta
         {
             case PLAYER ->
             {
-                this.entityType = EntityType.PLAYER;
+                this.entityType = EntityTypes.PLAYER;
                 this.playerDisguiseTargetName = disguiseType.toStrippedId(rawIdentifier);
             }
 
-            case VANILLA -> this.entityType = EntityType.byString(rawIdentifier).orElseThrow();
+            case VANILLA -> this.entityType = EntityTypeLookup.byIdentifier(rawIdentifier).orElseThrow();
             default -> this.entityType = null;
         }
     }

@@ -9,6 +9,6 @@ public class MorphToastHelper extends MorphClientObject
     @Initializer
     private void load()
     {
-        var toastMgr = Minecraft.getInstance().getToastManager();
+        var toastMgr = Minecraft.getInstance().gui.toastManager();
     }
 }

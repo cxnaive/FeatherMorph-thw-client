@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client;
 
+import net.minecraft.world.entity.EntityTypes;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
@@ -10,6 +11,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import xiamomc.pluginbase.Bindables.Bindable;
@@ -17,12 +19,14 @@ import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.entities.MorphLocalAvatar;
 import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 import xyz.nifeather.morph.client.utilties.EntityCacheUtils;
+import xyz.nifeather.morph.shared.EntityTypeLookup;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -105,6 +109,19 @@ public class EntityCache
     public static final String tag = "FMC_ClientView";
 
     protected static final RandomSource random = RandomSource.create();
+    // Allocate local IDs far from the server's normal entity range.
+    private static final AtomicInteger nextLocalEntityId = new AtomicInteger(Integer.MIN_VALUE);
+
+    private static void assignLocalId(Entity entity)
+    {
+        int localId;
+        do
+        {
+            localId = nextLocalEntityId.getAndIncrement();
+        }
+        while (entity.level().getEntity(localId) != null);
+        entity.setId(localId);
+    }
 
     public void dropAll()
     {
@@ -163,17 +180,18 @@ public class EntityCache
 
         if (identifier.startsWith("minecraft:"))
         {
-            var typeOptional = EntityType.byString(identifier);
+            var typeOptional = EntityTypeLookup.byIdentifier(identifier);
 
             if (typeOptional.isEmpty()) return null;
 
             var type = typeOptional.get();
 
-            try (var world = Minecraft.getInstance().level)
+            try
             {
+                var world = Minecraft.getInstance().level;
                 if (world == null) return null;
 
-                var instance = type == EntityType.MANNEQUIN ? new MorphLocalAvatar(world) : type.create(world, EntitySpawnReason.COMMAND);
+                var instance = type == EntityTypes.MANNEQUIN ? new MorphLocalAvatar(world) : type.create(world, EntitySpawnReason.COMMAND);
 
                 var uuid = ensureUUIDUnique(Mth.createInsecureUUID(random));
                 instance.setUUID(uuid);
@@ -197,8 +215,10 @@ public class EntityCache
             var uuid = ensureUUIDUnique(Mth.createInsecureUUID(random));
             var profile = new GameProfile(uuid, splitedId[1]);
 
-            try (var world = Minecraft.getInstance().level)
+            try
             {
+                var world = Minecraft.getInstance().level;
+                if (world == null) return null;
                 var localPlayer = new MorphLocalPlayer(world, profile, bindingPlayer);
                 localPlayer.updateSkin(new GameProfile(Util.NIL_UUID, splitedId[1]));
                 spawnedEntity = localPlayer;
@@ -212,6 +232,14 @@ public class EntityCache
         }
 
         if (spawnedEntity == null) return null;
+
+        // 26.2 leaves new entities without an ID. Keep local disguises separate from server IDs.
+        assignLocalId(spawnedEntity);
+        if (spawnedEntity instanceof EnderDragon dragon)
+        {
+            for (var part : dragon.getSubEntities())
+                assignLocalId(part);
+        }
 
         try
         {

@@ -253,7 +253,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
                 ItemStack armorItem = ClientItemUtils.fromCompound(bindingPlayer.level().registryAccess(), nbtCompound.getCompound("ArmorItem").orElseThrow())
                         .orElse(air);
 
-                horse.setBodyArmorItem(armorItem);
+                horse.setItemSlot(EquipmentSlot.BODY, armorItem);
             }
         }
 
@@ -382,7 +382,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
     {
         if (!allowTick) return;
 
-        if (disguiseInstance.getType() != EntityType.PLAYER && disguiseInstance.hasCustomName())
+        if (disguiseInstance.getType() != EntityTypes.PLAYER && disguiseInstance.hasCustomName())
         {
             renderState.nameTag = disguiseInstance.getName();
             renderState.nameTagAttachment = disguiseInstance.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, disguiseInstance.getYRot(1));
@@ -477,7 +477,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
             // Don't sync pitch when sleeping position is present -- Match plugin behavior (maybe?)
             if (sleepingPos == null && !(disguiseInstance instanceof Panda panda && panda.isSitting())) // Fix: Panda lock themselves pitch to zero when sitting
             {
-                xRot = (disguiseInstance.getType() == EntityType.PHANTOM)
+                xRot = (disguiseInstance.getType() == EntityTypes.PHANTOM)
                        ? -player.getXRot()
                        : player.getXRot();
             }
@@ -485,7 +485,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         if (!propertyHolder.contains(PropertyNames.ENTITY_STATIC_YAW))
         {
-            yRot = (disguiseInstance.getType() == EntityType.ENDER_DRAGON)
+            yRot = (disguiseInstance.getType() == EntityTypes.ENDER_DRAGON)
                    ? 180 + player.getYRot()
                    : player.getYRot();
 
@@ -494,7 +494,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
                 livingEntity.yHeadRot = player.yHeadRot;
                 livingEntity.yHeadRotO = player.yHeadRotO;
 
-                if (livingEntity.getType() == EntityType.ARMOR_STAND)
+                if (livingEntity.getType() == EntityTypes.ARMOR_STAND)
                 {
                     livingEntity.yBodyRot = player.yHeadRot;
                     livingEntity.yBodyRotO = player.yHeadRotO;
@@ -597,7 +597,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
         entity.setSharedFlagOnFire(bindingPlayer.isOnFire());
 
         // Hand and sneaking
-        if (entity.getType() != EntityType.MANNEQUIN)
+        if (entity.getType() != EntityTypes.MANNEQUIN)
             entity.setShiftKeyDown(bindingPlayer.isShiftKeyDown());
 
         entity.setSprinting(bindingPlayer.isSprinting());

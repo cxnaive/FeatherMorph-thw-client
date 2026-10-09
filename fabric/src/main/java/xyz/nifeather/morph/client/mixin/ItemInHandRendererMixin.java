@@ -1,6 +1,7 @@
 package xyz.nifeather.morph.client.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -63,10 +64,9 @@ public class ItemInHandRendererMixin implements ICustomItemInHandRenderer
                : value;
     }
 
-    @ModifyVariable(
-            method = "renderHandsWithItems",
-            at = @At("STORE"),
-            ordinal = 1
+    @ModifyExpressionValue(
+            method = "submitHandsWithItems",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackAnim(F)F")
     )
     private float morphclient$overrideSwingTime(float value, @Local(argsOnly = true) float f)
     {

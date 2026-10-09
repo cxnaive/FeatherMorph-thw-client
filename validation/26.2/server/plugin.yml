@@ -1,0 +1,12 @@
+name: FeatherMorphClientBackendProbe
+version: '1.0'
+main: BackendProbe
+api-version: '26.2'
+folia-supported: true
+depend: [FeatherMorph]
+commands:
+  fmclientbackend:
+    permission: fmclientbackend.console
+permissions:
+  fmclientbackend.console:
+    default: op

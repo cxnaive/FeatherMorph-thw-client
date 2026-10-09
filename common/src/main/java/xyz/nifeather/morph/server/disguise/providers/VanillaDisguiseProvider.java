@@ -1,5 +1,7 @@
 package xyz.nifeather.morph.server.disguise.providers;
 
+import xyz.nifeather.morph.shared.EntityTypeLookup;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 import org.jetbrains.annotations.Nullable;
@@ -111,7 +113,7 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
     @Override
     public Component getDisplayName(String disguiseIdentifier)
     {
-        var entityType = EntityType.byString(disguiseIdentifier).orElse(null);
+        var entityType = EntityTypeLookup.byIdentifier(disguiseIdentifier).orElse(null);
         if (entityType == null)
             return Component.nullToEmpty("???(%s)".formatted(disguiseIdentifier));
 

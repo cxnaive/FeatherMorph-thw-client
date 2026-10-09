@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.graphics;
 
+import net.minecraft.world.entity.EntityTypes;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
@@ -52,43 +53,43 @@ public class ModelWorkarounds
         workarounds.clear();
 
         //No-op
-        addWorkaround(List.of(EntityType.WARDEN, EntityType.VILLAGER, EntityType.SNOW_GOLEM), (l, r) ->
+        addWorkaround(List.of(EntityTypes.WARDEN, EntityTypes.VILLAGER, EntityTypes.SNOW_GOLEM), (l, r) ->
                 WorkaroundMeta.of(Vec3.ZERO, Vec3dUtils.ONE()));
 
-        addWorkaround(List.of(EntityType.HOGLIN, EntityType.ZOGLIN), (l, r) ->
+        addWorkaround(List.of(EntityTypes.HOGLIN, EntityTypes.ZOGLIN), (l, r) ->
                 WorkaroundMeta.of(new Vec3(0, -0.57f, 0.8f), Vec3dUtils.ONE()));
 
-        addWorkaround(List.of(EntityType.ZOMBIE_HORSE, EntityType.SKELETON_HORSE, EntityType.HORSE), (l, r) ->
+        addWorkaround(List.of(EntityTypes.ZOMBIE_HORSE, EntityTypes.SKELETON_HORSE, EntityTypes.HORSE), (l, r) ->
                 WorkaroundMeta.of(new Vec3(0, -0.45f, 1f), Vec3dUtils.ONE()));
 
-        addWorkaround(EntityType.POLAR_BEAR, (l, r) ->
+        addWorkaround(EntityTypes.POLAR_BEAR, (l, r) ->
                 WorkaroundMeta.of(new Vec3(0, -0.57f, 0.65f), Vec3dUtils.ONE()));
 
-        addWorkaround(EntityType.CREEPER, (l, r) ->
+        addWorkaround(EntityTypes.CREEPER, (l, r) ->
                 WorkaroundMeta.of(new Vec3(0, -0.57f, 0.5f), Vec3dUtils.ONE()));
 
-        addWorkaround(EntityType.IRON_GOLEM, (l, r) ->
+        addWorkaround(EntityTypes.IRON_GOLEM, (l, r) ->
                 WorkaroundMeta.of(Vec3dUtils.of(0, -0.2, 0), Vec3dUtils.of(.75)));
 
-        addWorkaround(List.of(EntityType.ALLAY, EntityType.VEX), (l, r) ->
+        addWorkaround(List.of(EntityTypes.ALLAY, EntityTypes.VEX), (l, r) ->
         {
             l.zRot = r.zRot = 0;
             return new WorkaroundMeta(Vec3dUtils.of(0, .25, .1), Vec3dUtils.of(1.5));
         });
 
-        addWorkaround(EntityType.BLAZE, (l, r) ->
+        addWorkaround(EntityTypes.BLAZE, (l, r) ->
                 WorkaroundMeta.of(Vec3dUtils.of(0, -0.1, 0.2), Vec3dUtils.ONE()));
 
-        addWorkaround(List.of(EntityType.CAMEL, EntityType.SNIFFER), (l, r) ->
+        addWorkaround(List.of(EntityTypes.CAMEL, EntityTypes.SNIFFER), (l, r) ->
                 WorkaroundMeta.of(new Vec3(0, -0.6, 0.7), Vec3dUtils.ONE()));
 
-        addWorkaround(EntityType.VILLAGER, (l, r) ->
+        addWorkaround(EntityTypes.VILLAGER, (l, r) ->
                 WorkaroundMeta.of(new Vec3(0, -0.5, 0.3), Vec3dUtils.ONE()));
 
-        addWorkaround(EntityType.DONKEY, (l, r) ->
+        addWorkaround(EntityTypes.DONKEY, (l, r) ->
                 WorkaroundMeta.of(Vec3dUtils.of(0, -0.5f, 0.6f), Vec3dUtils.ONE()));
 
-        addWorkaround(EntityType.ENDER_DRAGON, (l, r) ->
+        addWorkaround(EntityTypes.ENDER_DRAGON, (l, r) ->
         {
             //0.55f
             l.yRot = -0.6f;

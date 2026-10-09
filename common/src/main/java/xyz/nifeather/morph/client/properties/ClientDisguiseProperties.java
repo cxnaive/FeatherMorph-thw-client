@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.properties;
 
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -27,64 +28,65 @@ public class ClientDisguiseProperties
 
         reset();
 
-        register(EntityType.PLAYER, new PlayerPropertyCollection());
-        register(EntityType.ARMOR_STAND, new ArmorStandPropertyCollection());
-        register(EntityType.AXOLOTL, new AxolotlPropertyCollection());
-        register(EntityType.CAT, new CatPropertyCollection());
-        register(EntityType.CHICKEN, new ChickenPropertyCollection());
-        register(EntityType.COW, new CowPropertyCollection());
-        register(EntityType.CREEPER, new CreeperPropertyCollection());
-        register(EntityType.ENDER_DRAGON, new EnderDragonPropertyCollection());
-        register(EntityType.FOX, new FoxPropertyCollection());
-        register(EntityType.FROG, new FrogPropertyCollection());
-        register(EntityType.GOAT, new GoatPropertyCollection());
-        register(EntityType.HAPPY_GHAST, new HappyGhastPropertyCollection());
+        register(EntityTypes.PLAYER, new PlayerPropertyCollection());
+        register(EntityTypes.ARMOR_STAND, new ArmorStandPropertyCollection());
+        register(EntityTypes.AXOLOTL, new AxolotlPropertyCollection());
+        register(EntityTypes.CAT, new CatPropertyCollection());
+        register(EntityTypes.CHICKEN, new ChickenPropertyCollection());
+        register(EntityTypes.COW, new CowPropertyCollection());
+        register(EntityTypes.CREEPER, new CreeperPropertyCollection());
+        register(EntityTypes.ENDER_DRAGON, new EnderDragonPropertyCollection());
+        register(EntityTypes.FOX, new FoxPropertyCollection());
+        register(EntityTypes.FROG, new FrogPropertyCollection());
+        register(EntityTypes.GOAT, new GoatPropertyCollection());
+        register(EntityTypes.HAPPY_GHAST, new HappyGhastPropertyCollection());
 
-        register(EntityType.HOGLIN, new HoglinPropertyCollection());
-        register(EntityType.ZOGLIN, new ZoglinPropertyCollection());
+        register(EntityTypes.HOGLIN, new HoglinPropertyCollection());
+        register(EntityTypes.ZOGLIN, new ZoglinPropertyCollection());
 
-        register(EntityType.HORSE, new HorsePropertyCollection());
+        register(EntityTypes.HORSE, new HorsePropertyCollection());
 
-        register(EntityType.LLAMA, new LlamaPropertyCollection());
-        register(EntityType.MOOSHROOM, new MooshroomPropertyCollection());
+        register(EntityTypes.LLAMA, new LlamaPropertyCollection());
+        register(EntityTypes.MOOSHROOM, new MooshroomPropertyCollection());
 
-        register(EntityType.PANDA, new PandaPropertyCollection());
-        register(EntityType.PARROT, new ParrotPropertyCollection());
-        register(EntityType.PHANTOM, new PhantomPropertyCollection());
+        register(EntityTypes.PANDA, new PandaPropertyCollection());
+        register(EntityTypes.PARROT, new ParrotPropertyCollection());
+        register(EntityTypes.PHANTOM, new PhantomPropertyCollection());
 
-        register(EntityType.PIG, new PigPropertyCollection());
-        register(EntityType.RABBIT, new RabbitPropertyCollection());
+        register(EntityTypes.PIG, new PigPropertyCollection());
+        register(EntityTypes.RABBIT, new RabbitPropertyCollection());
 
-        register(EntityType.SHEEP, new SheepPropertyCollection());
-        register(EntityType.SHULKER, new ShulkerPropertyCollection());
+        register(EntityTypes.SHEEP, new SheepPropertyCollection());
+        register(EntityTypes.SHULKER, new ShulkerPropertyCollection());
 
-        register(EntityType.SLIME, new SlimePropertyCollection());
-        register(EntityType.MAGMA_CUBE, new MagmaPropertyCollection());
+        register(EntityTypes.SLIME, new SlimePropertyCollection());
+        register(EntityTypes.MAGMA_CUBE, new MagmaPropertyCollection());
+        register(EntityTypes.SULFUR_CUBE, new SulfurCubePropertyCollection());
 
-        register(EntityType.SNOW_GOLEM, new SnowGolemPropertyCollection());
+        register(EntityTypes.SNOW_GOLEM, new SnowGolemPropertyCollection());
 
-        register(EntityType.TRADER_LLAMA, new TraderLlamaPropertyCollection());
-        register(EntityType.TROPICAL_FISH, new TropicalFishPropertyCollection());
+        register(EntityTypes.TRADER_LLAMA, new TraderLlamaPropertyCollection());
+        register(EntityTypes.TROPICAL_FISH, new TropicalFishPropertyCollection());
 
-        register(EntityType.VILLAGER, new VillagerPropertyCollection());
-        register(EntityType.WOLF, new WolfPropertyCollection());
+        register(EntityTypes.VILLAGER, new VillagerPropertyCollection());
+        register(EntityTypes.WOLF, new WolfPropertyCollection());
 
-        register(EntityType.ZOMBIE, new ZombiePropertyhandler());
-        register(EntityType.ZOMBIE_VILLAGER, new ZombieVillagerPropertyhandler());
+        register(EntityTypes.ZOMBIE, new ZombiePropertyhandler());
+        register(EntityTypes.ZOMBIE_VILLAGER, new ZombieVillagerPropertyhandler());
 
-        register(EntityType.GUARDIAN, new GuardianPropertyCollection());
+        register(EntityTypes.GUARDIAN, new GuardianPropertyCollection());
 
-        register(EntityType.MANNEQUIN, new MannequinPropertyCollection());
-        register(EntityType.COPPER_GOLEM, new CopperGolemPropertyCollection());
+        register(EntityTypes.MANNEQUIN, new MannequinPropertyCollection());
+        register(EntityTypes.COPPER_GOLEM, new CopperGolemPropertyCollection());
 
-        register(EntityType.ITEM_DISPLAY, new ItemDisplayPropertyCollection());
+        register(EntityTypes.ITEM_DISPLAY, new ItemDisplayPropertyCollection());
 
-        register(EntityType.ALLAY, new AllayPropertyCollection());
-        register(EntityType.ARMADILLO, new ArmadilloPropertyCollection());
-        register(EntityType.CREAKING, new CreakingPropertyCollection());
-        register(EntityType.PIGLIN, new PiglinPropertyCollection());
-        register(EntityType.PUFFERFISH, new PufferfishPropertyCollection());
-        register(EntityType.SNIFFER, new SnifferPropertyCollection());
+        register(EntityTypes.ALLAY, new AllayPropertyCollection());
+        register(EntityTypes.ARMADILLO, new ArmadilloPropertyCollection());
+        register(EntityTypes.CREAKING, new CreakingPropertyCollection());
+        register(EntityTypes.PIGLIN, new PiglinPropertyCollection());
+        register(EntityTypes.PUFFERFISH, new PufferfishPropertyCollection());
+        register(EntityTypes.SNIFFER, new SnifferPropertyCollection());
     }
 
     private final FallbackPropertyCollection fallbackPropertyHandler = new FallbackPropertyCollection();
