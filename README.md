@@ -3,12 +3,12 @@ See [the plugin](https://github.com/NiFeather/FeatherMorph)
 ![cover](./assets/cover.png)
 
 <p align="right">
-  <img src="https://github.com/NiFeather/FeatherMorphClient/actions/workflows/gradle.yml/badge.svg">
+  <img src="https://github.com/cxnaive/FeatherMorph-thw-client/actions/workflows/build.yml/badge.svg">
 </p>
 
 <!-- [Wiki](https://github.com/NiFeather/FeatherMorph/wiki) -->
 
-# (WIP) FeatherMorphClient
+# FeatherMorph-thw-client
 
 [FeatherMorph](https://github.com/NiFeather/FeatherMorph)的客户端模组，可以提供一些增强功能。
 
@@ -34,8 +34,8 @@ See [the plugin](https://github.com/NiFeather/FeatherMorph)
 ### 构建
 ```bash
 #!/usr/bin/env bash
-git clone https://github.com/NiFeather/FeatherMorphClient
-cd FeatherMorphClient
+git clone https://github.com/cxnaive/FeatherMorph-thw-client
+cd FeatherMorph-thw-client
 
 ./gradlew build --no-daemon
 ```
